@@ -1,2 +1,4 @@
 __pycache__/
 datagen/
+DATA_DICTIONARY.txt
+.DS_Store
