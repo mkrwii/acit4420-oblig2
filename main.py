@@ -7,7 +7,9 @@ scenarios = dg.available_scenarios()
 
 def main():
     readSessionCSV("fitness_sessions.csv")
-    readParticipantCSV("participants.csv")
+    participants = readParticipantCSV("participants.csv")
+    for p in participants:
+        printParticipantData(p)
 '''for scenario in scenarios:
         participant, session = sd.getScenarioData(scenario)
         result = SessionClassifier(session).getResult()
