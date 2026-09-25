@@ -1,12 +1,13 @@
 from classes import *
 import data_generator as dg
 import sample_data as sd
-from filecontroller import readFitnessCSV
+from filecontroller import readSessionCSV, readParticipantCSV
 
 scenarios = dg.available_scenarios()
 
 def main():
-    readFitnessCSV("fitness_sessions.csv")
+    readSessionCSV("fitness_sessions.csv")
+    readParticipantCSV("participants.csv")
 '''for scenario in scenarios:
         participant, session = sd.getScenarioData(scenario)
         result = SessionClassifier(session).getResult()
