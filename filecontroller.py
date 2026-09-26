@@ -10,10 +10,10 @@ def readParticipantCSV(filename):
         for row in data:
             participant = classes.Participant(
                     participant_id=row["participant_id"],
+                    name=row["name"],
                     ref_heart_rate=row["baseline_heart_rate"],
                     ref_skin_response=row["baseline_skin_response"],
                     ref_temperature=row["baseline_temperature"],
-                    ref_activity_level=row.get("baseline_activity_level", 0.2),
                 )
             print(f"Added participant {participant.participant_id}")
             participants.append(participant)

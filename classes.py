@@ -30,12 +30,12 @@ class Observation:
 
 
 class Participant:
-    def __init__(self, participant_id, ref_heart_rate, ref_skin_response, ref_temperature, ref_activity_level):
+    def __init__(self, participant_id, name,ref_heart_rate, ref_skin_response, ref_temperature):
         self.participant_id = participant_id
+        self.name = name
         self.ref_heart_rate = ref_heart_rate
         self.ref_skin_response = ref_skin_response
         self.ref_temperature = ref_temperature
-        self.ref_activity_level = ref_activity_level
 
 
 class Session:
@@ -194,8 +194,8 @@ def printParticipantData(participant):
     prints the participant's data in a readable format
     '''
     print(f"--- PARTICIPANT DATA ---")
+    print(f"Name: {participant.name}")
     print(f"Participant id: {participant.participant_id}")
     print(f"Reference Heart rate: {participant.ref_heart_rate}")
     print(f"Reference Skin response: {participant.ref_skin_response}")
     print(f"Reference Temperature: {participant.ref_temperature}")
-    print(f"Reference Activity level: {participant.ref_activity_level}")
