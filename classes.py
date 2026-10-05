@@ -1,3 +1,5 @@
+import re
+
 class Observation:
     '''
     Checks for impossible values on object creation, as impossible data is unwanted.
@@ -28,14 +30,25 @@ class Observation:
         else:
             raise ValueError(f"Observation failed! {signal_quality} is not a valid activity level.")
 
-
 class Participant:
     def __init__(self, participant_id, name,ref_heart_rate, ref_skin_response, ref_temperature):
-        self.participant_id = participant_id
+        if isValidParticipant_id(participant_id):
+            self.participant_id = participant_id
+        else:
+            raise InvalidIdentifierError(f"Invalid identifier: {participant_id}")
         self.name = name
-        self.ref_heart_rate = ref_heart_rate
-        self.ref_skin_response = ref_skin_response
-        self.ref_temperature = ref_temperature
+        if isinstance(ref_heart_rate, (int,float)) and 35 <= ref_heart_rate <= 205:
+            self.ref_heart_rate = ref_heart_rate
+        else:
+            raise ValueError(f"Observation failed! {ref_heart_rate} is not a valid heart rate.")
+        if isinstance(ref_skin_response, (int,float)) and 0 <= ref_skin_response:
+            self.ref_skin_response = ref_skin_response
+        else:
+            raise ValueError(f"Observation failed! {ref_skin_response} is not a valid skin response.")
+        if isinstance(ref_temperature, (int,float)) and 25 <= ref_temperature <= 42:
+            self.ref_temperature = ref_temperature
+        else:
+            raise ValueError(f"Observation failed! {ref_temperature} is not a valid temperature.")
 
 
 class Session:
@@ -43,7 +56,10 @@ class Session:
     Stores the observations in a private list so that observations cannot be removed, but we are able to add new ones.
     '''
     def __init__(self, session_id, participant, start_time, end_time):
-        self.session_id = session_id
+        if isValidSession_id(session_id):
+            self.session_id = session_id
+        else:
+            raise InvalidIdentifierError(f"Invalid identifier: {session_id}")
         self.participant = participant
         self.start_time = start_time
         self.end_time = end_time
@@ -157,7 +173,15 @@ class SessionClassifier:
         return isDeclining(first_avg, second_avg, self.RECOVERY_MARGIN)
 
 
+# custom exceptions
+
+class InvalidIdentifierError(ValueError):
+    """Raised when an identifier has an invalid format."""
+
+
 # standalone functions
+
+# helper functions
 
 def findAverage(values):
     '''
@@ -175,6 +199,26 @@ def isDeclining(value1, value2, margin):
     '''
     decline = (value1 - value2) / value1
     return decline >= margin
+
+# validation functions
+
+def isValidParticipant_id(value):
+    '''
+    Checks whether value matches the required participant ID format: P followed by exactly three digits.
+    '''
+    return isinstance(value, str) and PARTICIPANT_ID_PATTERN.fullmatch(value) is not None
+
+
+def isValidSession_id(value):
+    '''
+    Checks whether value matches the required session ID format: FIT-YYYY-NNN.
+    '''
+    return isinstance(value, str) and SESSION_ID_PATTERN.fullmatch(value) is not None
+
+# printing functions
+
+PARTICIPANT_ID_PATTERN = re.compile(r"^P\d{3}$")
+SESSION_ID_PATTERN = re.compile(r"^FIT-\d{4}-\d{3}$")
 
 def printSessionReport(session, participant, result):
     '''

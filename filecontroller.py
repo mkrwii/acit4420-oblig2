@@ -1,9 +1,11 @@
 import csv
 import classes
 
-#this is the folder where the data files are stored
-DATA_FOLDER = "data/"
+#this is the folder where the data files are stored. Leave empty if using the argparse method.
+DATA_FOLDER = ""
 
+class InvalidRecordError(ValueError):
+    """Raised when a CSV record cannot be accepted."""
 
 def readParticipantCSV(filename):
     '''
@@ -12,19 +14,23 @@ def readParticipantCSV(filename):
     
     participants = []
     path = DATA_FOLDER + filename
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8", newline="") as f:
         data = csv.DictReader(f)
         for row in data:
-            participant = classes.Participant(
-                    participant_id=row["participant_id"],
-                    name=row["name"],
-                    ref_heart_rate=row["baseline_heart_rate"],
-                    ref_skin_response=row["baseline_skin_response"],
-                    ref_temperature=row["baseline_temperature"],
-                )
-            print(f"Added participant {participant.participant_id}")
-            participants.append(participant)
+            try:
+                participant = classes.Participant(
+                        participant_id=row["participant_id"],
+                        name=row["name"],
+                        ref_heart_rate=int(row["baseline_heart_rate"]),
+                        ref_skin_response=float(row["baseline_skin_response"]),
+                        ref_temperature=float(row["baseline_temperature"]),
+                    )
+                print(f"Added participant {participant.participant_id}")
+                participants.append(participant)
+            except ValueError as e:
+                print(f"Error mapping data to Participant object: {e}")
         return participants
+
 
 def readSessionCSV(filename, participants):
     '''
@@ -38,14 +44,20 @@ def readSessionCSV(filename, participants):
     raw_obs = []
     current_session_id = None
 
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8", newline="") as f:
         data = csv.DictReader(f)
         for row in data:
+            missing = [k for k, v in row.items()if v is None or v.strip() == ""]
+            if missing:
+                raise InvalidRecordError(f"Missing values for columns: {', '.join(missing)}")
             if row.get("session_id") == current_session_id:
                 raw_obs.append(row)
             else:
                 if raw_obs:
-                    sessions.append(_build_session(current_session_id, raw_obs, participants_by_id))
+                    try:
+                        sessions.append(_build_session(current_session_id, raw_obs, participants_by_id))
+                    except classes.InvalidIdentifierError as e:
+                        print(e)
                 current_session_id = row.get("session_id")
                 raw_obs = [row]
 
