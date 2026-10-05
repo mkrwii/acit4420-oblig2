@@ -1,5 +1,5 @@
 from classes import *
-from filecontroller import readSessionCSV, readParticipantCSV, InvalidRecordError
+from filecontroller import readSessionCSV, readParticipantCSV, writeAnalysisOutput, InvalidRecordError
 import argparse
 
 def handleargs():
@@ -23,11 +23,10 @@ def handleargs():
 
 def main():
     sessions = None
-
     args = handleargs()
-    participants = readParticipantCSV(args.profiles)
+    participants, participant_errors = readParticipantCSV(args.profiles)
     try:
-        sessions = readSessionCSV(args.sessions, participants)
+        sessions, session_errors = readSessionCSV(args.sessions, participants)
     except InvalidRecordError as e:
         print(f"Invalid record: {e}")
         sessions = None
@@ -36,10 +35,9 @@ def main():
             printParticipantData(p)
     else:
         print("There are no valid participants in the file provided.")
-
     if sessions:
-        for s in sessions:
-            printSessionData(s, participants)
+        errors = participant_errors + session_errors
+        writeAnalysisOutput(sessions, errors, args.output)
     else:
         print("There are no valid sessions in the file provided.")
 '''for scenario in scenarios:
