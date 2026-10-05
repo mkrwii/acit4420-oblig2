@@ -118,9 +118,12 @@ def readSessionCSV(filename, participants):
     with open(path, "r", encoding="utf-8", newline="") as f:
         data = csv.DictReader(f)
         for row in data:
-            missing = [k for k, v in row.items()if v is None or v.strip() == ""]
+            missing = [k for k, v in row.items() if v is None or v.strip() == ""]
             if missing:
-                errors.append(f"{filename}: session {row.get('session_id')} - "f"Missing values for columns: {', '.join(missing)}")
+                errors.append(
+                    f"{filename}: session {row.get('session_id')} - "
+                    f"Missing values for columns: {', '.join(missing)}"
+                )
                 continue
             if row.get("session_id") == current_session_id:
                 raw_obs.append(row)
@@ -131,15 +134,17 @@ def readSessionCSV(filename, participants):
                         if session is not None:
                             sessions.append(session)
                     except exceptions.InvalidIdentifierError as e:
-                        errors.append(f"{row.get('session_id')}: {e}")
+                        errors.append(f"{filename}: session {current_session_id} - {e}")
                 current_session_id = row.get("session_id")
                 raw_obs = [row]
 
     if raw_obs:
-
-        session = _build_session(current_session_id, raw_obs, participants_by_id, errors)
-        if session is not None:
-            sessions.append(session)
+        try:
+            session = _build_session(current_session_id, raw_obs, participants_by_id, errors)
+            if session is not None:
+                sessions.append(session)
+        except exceptions.InvalidIdentifierError as e:
+            errors.append(f"{filename}: session {current_session_id} - {e}")
 
     return sessions or None, errors
 
@@ -155,12 +160,9 @@ def _build_session(session_id, rows, participants_by_id, errors):
         errors.append(f"{session_id}: unknown participant {participant_id}")
         return None
 
-    timestamps = [int(row["timestamp"]) for row in rows]
     session = classes.Session(
         session_id=session_id,
         participant=participant,
-        start_time=min(timestamps),
-        end_time=max(timestamps),
     )
 
     for row in rows:

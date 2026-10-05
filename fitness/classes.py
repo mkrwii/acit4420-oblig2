@@ -56,14 +56,12 @@ class Session:
     '''
     Stores the observations in a private list so that observations cannot be removed, but we are able to add new ones.
     '''
-    def __init__(self, session_id, participant, start_time, end_time):
+    def __init__(self, session_id, participant):
         if isValidSession_id(session_id):
             self.session_id = session_id
         else:
             raise exceptions.InvalidIdentifierError(f"Invalid identifier: {session_id}")
         self.participant = participant
-        self.start_time = start_time
-        self.end_time = end_time
         self.__observations = []
     def addObservation(self, observation):
         self.__observations.append(observation)
