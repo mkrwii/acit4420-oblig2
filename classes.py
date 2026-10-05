@@ -178,7 +178,7 @@ def isDeclining(value1, value2, margin):
 
 def printSessionReport(session, participant, result):
     '''
-    prints a session as a readable report
+    prints a classified session as a readable report
     '''
     print(f"--- SESSION REPORT ---")
     print(f"Participant id: {participant.participant_id}")
@@ -199,3 +199,13 @@ def printParticipantData(participant):
     print(f"Reference Heart rate: {participant.ref_heart_rate}")
     print(f"Reference Skin response: {participant.ref_skin_response}")
     print(f"Reference Temperature: {participant.ref_temperature}")
+
+def printSessionData(session, participants):
+    '''
+    uses a Session object and a list of participants to print a single unclassified session in a readable format
+    '''
+    print(f"--- SINGLE SESSION ---")
+    print(f"Session ID: {session.session_id}")
+    print(f"Name: {session.participant.name}")
+    print(f"Observations: {session.getNumberOfObservations()}")
+    

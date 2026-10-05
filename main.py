@@ -6,10 +6,12 @@ from filecontroller import readSessionCSV, readParticipantCSV
 scenarios = dg.available_scenarios()
 
 def main():
-    readSessionCSV("fitness_sessions.csv")
     participants = readParticipantCSV("participants.csv")
+    sessions = readSessionCSV("fitness_sessions_invalid.csv", participants)
     for p in participants:
         printParticipantData(p)
+    for s in sessions:
+        printSessionData(s, participants)
 '''for scenario in scenarios:
         participant, session = sd.getScenarioData(scenario)
         result = SessionClassifier(session).getResult()
