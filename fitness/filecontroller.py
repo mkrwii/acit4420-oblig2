@@ -1,9 +1,7 @@
 import csv
 from pathlib import Path
 from . import classes
-
-class InvalidRecordError(ValueError):
-    """Raised when a CSV record cannot be accepted."""
+from . import exceptions
 
 
 def writeAnalysisOutput(sessions, rejected_records, output_dir):
@@ -132,7 +130,7 @@ def readSessionCSV(filename, participants):
                         session = _build_session(current_session_id, raw_obs, participants_by_id, errors)
                         if session is not None:
                             sessions.append(session)
-                    except classes.InvalidIdentifierError as e:
+                    except exceptions.InvalidIdentifierError as e:
                         errors.append(f"{row.get('session_id')}: {e}")
                 current_session_id = row.get("session_id")
                 raw_obs = [row]

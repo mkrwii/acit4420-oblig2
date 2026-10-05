@@ -1,4 +1,5 @@
 import re
+from . import exceptions
 
 class Observation:
     '''
@@ -35,7 +36,7 @@ class Participant:
         if isValidParticipant_id(participant_id):
             self.participant_id = participant_id
         else:
-            raise InvalidIdentifierError(f"Invalid identifier: {participant_id}")
+            raise exceptions.InvalidIdentifierError(f"Invalid identifier: {participant_id}")
         self.name = name
         if isinstance(ref_heart_rate, (int,float)) and 35 <= ref_heart_rate <= 205:
             self.ref_heart_rate = ref_heart_rate
@@ -59,7 +60,7 @@ class Session:
         if isValidSession_id(session_id):
             self.session_id = session_id
         else:
-            raise InvalidIdentifierError(f"Invalid identifier: {session_id}")
+            raise exceptions.InvalidIdentifierError(f"Invalid identifier: {session_id}")
         self.participant = participant
         self.start_time = start_time
         self.end_time = end_time
@@ -171,12 +172,6 @@ class SessionClassifier:
         first_avg = findAverage([o.heart_rate for o in first_half])
         second_avg = findAverage([o.heart_rate for o in second_half])
         return isDeclining(first_avg, second_avg, self.RECOVERY_MARGIN)
-
-
-# custom exceptions
-
-class InvalidIdentifierError(ValueError):
-    """Raised when an identifier has an invalid format."""
 
 
 # standalone functions
