@@ -237,7 +237,7 @@ def printParticipantData(participant):
     print(f"Reference Skin response: {participant.ref_skin_response}")
     print(f"Reference Temperature: {participant.ref_temperature}")
 
-def printSessionData(session, participants):
+def printSessionData(session):
     '''
     uses a Session object and a list of participants to print a single unclassified session in a readable format
     '''
