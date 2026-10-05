@@ -33,24 +33,14 @@ The primary assumption is that heart rate is the primary indicator for how hard 
 The application does, as per its specifications, compare the skin response and temperature to the reference values of the participant, but this is a pure comparison, and it does not affect the classification.
 
 ## Exact installation and running instructions:
-install: `git clone github.com/mkrwii/acit4420-oblig1`
-running: To see the report outputs of the five scenarios, run `python3 main.py`. To run the tests to see how it aligns with the generated data, run `python3 tests.py`
+install: `git clone github.com/mkrwii/acit4420-oblig2`
+running: run as prescribed in the assignment: `python3 main.py --profiles data/participants.csv --sessions data/fitness_sessions.csv --output output`
 
 ## Example output:
-    --- PARTICIPANT DATA ---
-    Participant id: P123
-    Baseline Heart rate: 65
-    Baseline Skin response: 1.75
-    Baseline Temperature: 32.72
-    Baseline Activity level: 0.2
-    --- SESSION REPORT ---
-    Participant id: P123
-    Session ID: S-3
-    Usable Observations: 12
-    Average Heart rate: 125.0 (Baseline: 65)
-    Skin response: HIGH (Baseline: 1.75)
-    Temperature: HIGH (Baseline: 32.72)
-    Classification: HIGH
+three files:
+analysis_report.txt - readable reports from the sessions (similar to output from Oblig 1)
+analys_summary.csv - machine-readable sessions
+rejected_records.txt - error messages
 
 ## Known limitations:
 The classification is not quite 100% accurate, and very rarely, a scenario that the data generator sees as "high" will be classified as "medium". However, the current tuning of the threshold values makes this a very rare occurrence.
