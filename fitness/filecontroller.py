@@ -1,14 +1,9 @@
 import csv
 from pathlib import Path
-import classes
+from . import classes
 
 class InvalidRecordError(ValueError):
     """Raised when a CSV record cannot be accepted."""
-
-
-from pathlib import Path
-import csv
-import classes
 
 
 def writeAnalysisOutput(sessions, rejected_records, output_dir):

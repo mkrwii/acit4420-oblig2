@@ -1,5 +1,5 @@
-from classes import *
-from filecontroller import readSessionCSV, readParticipantCSV, writeAnalysisOutput, InvalidRecordError
+from fitness.classes import *
+from fitness.filecontroller import readSessionCSV, readParticipantCSV, writeAnalysisOutput, InvalidRecordError
 import argparse
 
 def handleargs():
