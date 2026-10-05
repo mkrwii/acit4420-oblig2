@@ -7,10 +7,10 @@ Magnus K Wiik
 ## Student no: 
 374992
 ## Disclaimer:
-The file data_generator.py is not my work, and is included for convenience. The file was handed out on Canvas.
+The three files in the /data folder are provided by the instructor on Canvas.
 This project is essentially a fork of assignment 1, and will contain similar and/or duplicate code.
 ## Description:
-This application uses Python OOP to structure, classify and present exercise data. The classes are defined in classes.py, where most of the logic is handled. tests.py and main.py provide two different ways of running the program. Synthetic data is provided by the data generator (see the above disclaimer), and processed as a shared service for main and tests in sample_data.py
+This application uses Python OOP to structure, classify and present exercise data. The classes are defined in classes.py, where most of the logic is handled. tests.py and main.py provide two different ways of running the program. Synthetic data is provided in the data/ folder.
 
 The project does not use external libraries, and the provided requirements.txt is thus empty.
 
@@ -35,6 +35,7 @@ The application does, as per its specifications, compare the skin response and t
 ## Exact installation and running instructions:
 install: `git clone github.com/mkrwii/acit4420-oblig2`
 running: run as prescribed in the assignment: `python3 main.py --profiles data/participants.csv --sessions data/fitness_sessions.csv --output output`
+test run: run `python3 tests.py`
 
 ## Example output:
 three files:

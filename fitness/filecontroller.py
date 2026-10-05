@@ -11,7 +11,7 @@ def writeAnalysisOutput(sessions, rejected_records, output_dir):
         analysis_report.txt
         rejected_records.txt
     """
-
+    files_created = 0
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -47,7 +47,7 @@ def writeAnalysisOutput(sessions, rejected_records, output_dir):
                 result["skin_response"],
                 result["temperature"]
             ])
-
+        files_created += 1
     # analysis_report.txt
     with open(report_file, "w", encoding="utf-8") as f:
         for session in sessions:
@@ -64,6 +64,7 @@ def writeAnalysisOutput(sessions, rejected_records, output_dir):
             f.write(f"Skin response: {result['skin_response']}\n")
             f.write(f"Temperature: {result['temperature']}\n")
             f.write("\n")
+        files_created += 1
 
     # rejected_records.txt
     with open(rejected_file, "w", encoding="utf-8") as f:
@@ -72,8 +73,9 @@ def writeAnalysisOutput(sessions, rejected_records, output_dir):
                 f.write(record + "\n")
         else:
             f.write("No rejected records.\n")
+        files_created += 1
 
-    return 3
+    return files_created
 
 
 def readParticipantCSV(filename):
@@ -83,23 +85,33 @@ def readParticipantCSV(filename):
     
     participants = []
     errors = []
+    lines = 0
     path = filename
-    with open(path, "r", encoding="utf-8", newline="") as f:
-        data = csv.DictReader(f)
-        for row in data:
-            try:
-                participant = classes.Participant(
-                        participant_id=row["participant_id"],
-                        name=row["name"],
-                        ref_heart_rate=int(row["baseline_heart_rate"]),
-                        ref_skin_response=float(row["baseline_skin_response"]),
-                        ref_temperature=float(row["baseline_temperature"]),
-                    )
-                print(f"Added participant {participant.participant_id}")
-                participants.append(participant)
-            except ValueError as e:
-                errors.append(f"{filename}: participant {row.get('participant_id')} - {e}")
+    try:
+        with open(path, "r", encoding="utf-8", newline="") as f:
+            data = csv.DictReader(f)
+            for row in data:
+                try:
+                    participant = classes.Participant(
+                            participant_id=row["participant_id"],
+                            name=row["name"],
+                            ref_heart_rate=int(row["baseline_heart_rate"]),
+                            ref_skin_response=float(row["baseline_skin_response"]),
+                            ref_temperature=float(row["baseline_temperature"]),
+                        )
+                    participants.append(participant)
+                except ValueError as e:
+                    errors.append(f"{filename}: participant {row.get('participant_id')} - {e}")
+                except KeyError as e:
+                    errors.append(f"{filename}: {e}")
+            return participants, errors
+    except FileNotFoundError as e:
+        print(f"error in {path}: {e}")
         return participants, errors
+    except PermissionError as e:
+        print(f"error in {path}: {e}")
+        return participants, errors
+    
 
 
 def readSessionCSV(filename, participants):
@@ -114,30 +126,39 @@ def readSessionCSV(filename, participants):
     errors = []
     raw_obs = []
     current_session_id = None
-
-    with open(path, "r", encoding="utf-8", newline="") as f:
-        data = csv.DictReader(f)
-        for row in data:
-            missing = [k for k, v in row.items() if v is None or v.strip() == ""]
-            if missing:
-                errors.append(
-                    f"{filename}: session {row.get('session_id')} - "
-                    f"Missing values for columns: {', '.join(missing)}"
-                )
-                continue
-            if row.get("session_id") == current_session_id:
-                raw_obs.append(row)
-            else:
-                if raw_obs:
+    lines = 0
+    try:
+        with open(path, "r", encoding="utf-8", newline="") as f:
+            data = csv.DictReader(f)
+            try:
+                for row in data:
+                    lines += 1
                     try:
-                        session = _build_session(current_session_id, raw_obs, participants_by_id, errors)
-                        if session is not None:
-                            sessions.append(session)
-                    except exceptions.InvalidIdentifierError as e:
-                        errors.append(f"{filename}: session {current_session_id} - {e}")
-                current_session_id = row.get("session_id")
-                raw_obs = [row]
-
+                        _check_row(row)
+                    except exceptions.InvalidRecordError as e:
+                        errors.append(f"{filename}: session {row.get('session_id')} - {e}")
+                        continue
+                    if row.get("session_id") == current_session_id:
+                        raw_obs.append(row)
+                    else:
+                        if raw_obs:
+                            try:
+                                session = _build_session(current_session_id, raw_obs, participants_by_id, errors)
+                                if session is not None:
+                                    sessions.append(session)
+                            except exceptions.InvalidIdentifierError as e:
+                                errors.append(f"{filename}: session {current_session_id} - {e}")
+                        current_session_id = row.get("session_id")
+                        raw_obs = [row]
+            except csv.Error as e:
+                errors.append(f"{filename}: {e}")
+    except FileNotFoundError as e:
+        print(f"error in {path}: {e}")
+        return sessions or None, errors, 0
+    except PermissionError as e:
+        print(f"error in {path}: {e}")
+        return sessions or None, errors, 0
+        
     if raw_obs:
         try:
             session = _build_session(current_session_id, raw_obs, participants_by_id, errors)
@@ -146,7 +167,7 @@ def readSessionCSV(filename, participants):
         except exceptions.InvalidIdentifierError as e:
             errors.append(f"{filename}: session {current_session_id} - {e}")
 
-    return sessions or None, errors
+    return sessions or None, errors, lines
 
 
 def _build_session(session_id, rows, participants_by_id, errors):
@@ -179,6 +200,16 @@ def _build_session(session_id, rows, participants_by_id, errors):
         except ValueError as e:
             errors.append(f"{session_id}: invalid observation - {e}")
     return session
+
+
+def _check_row(row):
+    '''Raises InvalidRecordError if the row has the wrong number of columns or blank values.'''
+    if None in row:  # DictReader's marker for surplus columns
+        raise exceptions.InvalidRecordError(f"Too many columns (extra values: {row[None]})")
+
+    missing = [k for k, v in row.items() if v is None or v.strip() == ""]
+    if missing:
+        raise exceptions.InvalidRecordError(f"Missing values for columns: {', '.join(missing)}")
 
 
 def main():

@@ -25,28 +25,26 @@ def handleargs():
 def main():
     sessions = None
     args = handleargs()
-    participants, participant_errors = readParticipantCSV(args.profiles)
     try:
-        sessions, session_errors = readSessionCSV(args.sessions, participants)
+        participants, participant_errors = readParticipantCSV(args.profiles)
+    except KeyError as e:
+        print(f"The profiles file is not compatible, it lacks (at least) the key {e}")
+        return
+    try:
+        sessions, session_errors, lines = readSessionCSV(args.sessions, participants)
     except InvalidRecordError as e:
         print(f"Invalid record: {e}")
         sessions = None
-    if participants:
-        for p in participants:
-            printParticipantData(p)
-    else:
+    if not participants:
         print("There are no valid participants in the file provided.")
     if sessions:
         errors = participant_errors + session_errors
-        writeAnalysisOutput(sessions, errors, args.output)
+        created_files = writeAnalysisOutput(sessions, errors, args.output)
     else:
         print("There are no valid sessions in the file provided.")
-'''for scenario in scenarios:
-        participant, session = sd.getScenarioData(scenario)
-        result = SessionClassifier(session).getResult()
-        printParticipantData(participant)
-        printSessionReport(session, participant, result)
-'''
+    print(f"accepted observation rows: {lines - len(session_errors)}")
+    print(f"rejected observation rows: {len(session_errors)}")
+    print(f"number of files created: {created_files}")
 
 if __name__ == "__main__":
     main()
